@@ -1,6 +1,13 @@
 from abc import ABC, abstractmethod
+from typing import Literal
 
-Board = list[list[int]]
+
+PLAYER_X = 1
+PLAYER_O = 2
+
+Player = Literal[PLAYER_X, PLAYER_O]  # type: ignore [valid-type]
+Board = list[list[Player|None]]
+
 
 class TicTacToe(ABC):
     @abstractmethod    
@@ -12,9 +19,13 @@ class TicTacToe(ABC):
         pass
 
     @abstractmethod
-    def check_winner(self) -> int|None:
+    def check_winner(self) -> Player|None:
         pass
 
     @abstractmethod
     def get_board(self) -> Board:
+        pass
+
+    @abstractmethod
+    def get_current_player(self) -> Player:
         pass

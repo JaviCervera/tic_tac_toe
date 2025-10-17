@@ -12,19 +12,31 @@ def move():
     row, col = data['row'], data['col']
     success = game.make_move(row, col)
     if success:
-        return jsonify({'board': game.get_board(), 'winner': game.check_winner()}), 200
+        return jsonify({
+            'board': game.get_board(),
+            'winner': game.check_winner(),
+            'current_player': game.get_current_player(),
+        }), 200
     return jsonify({'error': 'Invalid move'}), 400
 
 
 @app.route('/board', methods=['GET'])
 def board():
-    return jsonify({'board': game.get_board(), 'winner': game.check_winner()}), 200
+    return jsonify({
+        'board': game.get_board(),
+        'winner': game.check_winner(),
+        'current_player': game.get_current_player(),
+    }), 200
 
 
 @app.route('/reset', methods=['POST'])
 def reset():
     game.reset_game()
-    return jsonify({'board': game.get_board(), 'winner': game.check_winner()}), 200
+    return jsonify({
+        'board': game.get_board(),
+        'winner': game.check_winner(),
+        'current_player': game.get_current_player(),
+    }), 200
 
 
 if __name__ == '__main__':
