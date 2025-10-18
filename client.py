@@ -4,11 +4,16 @@ from game import Board, Player, PLAYER_X, TicTacToe, TicTacToeProxy
 def player_str(player: Player) -> str:
     return 'X' if player == PLAYER_X else 'O'
 
+
 def print_board(game: TicTacToe) -> None:
     for row in game.get_board():
         print(' | '.join(['X' if cell == 1 else 'O' if cell == 2 else ' ' for cell in row]))
         print('-' * 9)
     print(f'Current player: {player_str(game.get_current_player())}')
+
+
+def has_empty_cells(board: Board) -> bool:
+    return any(cell is None for row in board for cell in row)
 
 
 def main() -> None:
@@ -29,9 +34,10 @@ def main() -> None:
                 print_board(game)
                 if game.check_winner():
                     print(f'Player {player_str(game.check_winner())} wins!')
-                    continue
             else:
                 print('Invalid move. Try again.')
+            if not has_empty_cells(game.get_board()):
+                print("It's a draw!")
         elif action == 'exit':
             print('Exiting the game.')
             break
