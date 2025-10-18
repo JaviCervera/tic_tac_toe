@@ -4,10 +4,11 @@ from typing import Literal
 
 PLAYER_X = 1
 PLAYER_O = 2
+DRAW_GAME = -1
 
 Player = Literal[PLAYER_X, PLAYER_O]  # type: ignore [valid-type]
 Board = list[list[Player|None]]
-
+Winner = Literal[None, Player, DRAW_GAME]
 
 class TicTacToe(ABC):
     @abstractmethod    
@@ -19,7 +20,7 @@ class TicTacToe(ABC):
         pass
 
     @abstractmethod
-    def check_winner(self) -> Player|None:
+    def check_winner(self) -> Winner:
         pass
 
     @abstractmethod

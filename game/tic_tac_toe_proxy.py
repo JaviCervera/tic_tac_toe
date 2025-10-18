@@ -1,6 +1,6 @@
 import requests
 
-from .tic_tac_toe import Board, Player, TicTacToe
+from .tic_tac_toe import Board, Player, TicTacToe, Winner
 
 class TicTacToeProxy(TicTacToe):
     def __init__(self, url: str):
@@ -8,7 +8,7 @@ class TicTacToeProxy(TicTacToe):
         response = requests.get(f'{self._base_url}/board')
         if response.status_code == 200:
             self._board: Board = response.json()['board']
-            self._winner: Player|None = response.json()['winner']
+            self._winner: Winner = response.json()['winner']
             self._current_player: Player = response.json()['current_player']
         else:
             raise RuntimeError("Can't get game board from the server. Is it running?")
@@ -33,7 +33,7 @@ class TicTacToeProxy(TicTacToe):
         else:
             return False
 
-    def check_winner(self) -> Player|None:
+    def check_winner(self) -> Winner:
         return self._winner
 
     def get_board(self) -> Board:

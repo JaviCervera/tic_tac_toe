@@ -1,4 +1,4 @@
-from .tic_tac_toe import Board, Player, PLAYER_O, PLAYER_X, TicTacToe
+from .tic_tac_toe import Board, DRAW_GAME, Player, PLAYER_O, PLAYER_X, TicTacToe, Winner
 
 GRID_SIZE = 3
 EMPTY = None
@@ -10,7 +10,7 @@ class TicTacToeImpl(TicTacToe):
     def reset_game(self) -> bool:
         self._board: Board = [[EMPTY] * GRID_SIZE for _ in range(GRID_SIZE)]
         self._current_player: Player = PLAYER_X
-        self._winner: Player|None = None
+        self._winner: Winner = None
         return True
 
     def make_move(self, row: int, col: int) -> bool:
@@ -21,7 +21,10 @@ class TicTacToeImpl(TicTacToe):
             return True
         return False
 
-    def check_winner(self) -> Player|None:
+    def check_winner(self) -> Winner:
+        if not any(cell is None for row in self._board for cell in row):
+            # No empty cells, draw game
+            return DRAW_GAME
         for i in range(GRID_SIZE):
             if (self._board[i][0] == self._board[i][1] == self._board[i][2] != EMPTY) or \
                 (self._board[0][i] == self._board[1][i] == self._board[2][i] != EMPTY):
