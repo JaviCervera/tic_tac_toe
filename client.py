@@ -1,42 +1,57 @@
-from game import Board, DRAW_GAME, Player, PLAYER_X, TicTacToe, TicTacToeProxy
+from pyray import *
+
+from game import Board, DRAW_GAME, Player, PLAYER_O, PLAYER_X, TicTacToe, TicTacToeProxy
+
+WIDTH, HEIGHT = 600, 600
+GRID_SIZE = 3
+CELL_SIZE = WIDTH // GRID_SIZE
 
 
-def player_str(player: Player) -> str:
-    return 'X' if player == PLAYER_X else 'O'
+def draw_board(board: Board):
+    for row in range(GRID_SIZE):
+        for col in range(GRID_SIZE):
+            x = col * CELL_SIZE
+            y = row * CELL_SIZE
+            if board[row][col] == PLAYER_X:
+                draw_line(x + 20, y + 20, x + CELL_SIZE - 20, y + CELL_SIZE - 20, RED)
+                draw_line(x + CELL_SIZE - 20, y + 20, x + 20, y + CELL_SIZE - 20, RED)
+            elif board[row][col] == PLAYER_O:
+                draw_circle(x + CELL_SIZE // 2, y + CELL_SIZE // 2, CELL_SIZE // 2 - 20, BLUE)
 
 
-def print_board(game: TicTacToe) -> None:
-    for row in game.get_board():
-        print(' | '.join(['X' if cell == 1 else 'O' if cell == 2 else ' ' for cell in row]))
-        print('-' * 9)
-    print(f'Current player: {player_str(game.get_current_player())}')
+def game_over(game: TicTacToe) -> bool:
+    return game.check_winner() is not None
 
 
 def main() -> None:
     game: TicTacToe = TicTacToeProxy('http://127.0.0.1:5000')
-    print_board(game)
-    while True:
-        action = input('Choose action: [move, reset, exit]: ').strip().lower()
-        if action == 'reset':
-            if game.reset_game():
-                print('Game reset!')
-                print_board(game)
-            else:
-                print('Error resetting the game.')
-        elif action == 'move':
-            row = int(input('Enter row (0, 1, or 2): '))
-            col = int(input('Enter column (0, 1, or 2): '))
-            if game.make_move(row, col):
-                print_board(game)
-                if game.check_winner() not in (None, DRAW_GAME):
-                    print(f'Player {player_str(game.check_winner())} wins!')
-            else:
-                print('Invalid move. Try again.')
-            if game.check_winner() == DRAW_GAME:
-                print("It's a draw!")
-        elif action == 'exit':
-            print('Exiting the game.')
-            break
+    
+    init_window(WIDTH, HEIGHT, 'Tic Tac Toe')
+    set_target_fps(60)
+
+    while not window_should_close():
+        if not game_over(game):
+            if is_mouse_button_down(MouseButton.MOUSE_BUTTON_LEFT):
+                mouse_x = get_mouse_x()
+                mouse_y = get_mouse_y()
+                
+                col = mouse_x // CELL_SIZE
+                row = mouse_y // CELL_SIZE
+
+                game.make_move(row, col)
+
+        begin_drawing()
+        clear_background(RAYWHITE)
+        draw_board(game.get_board())
+
+        if game_over(game):
+            message = f'Player {"X" if game.check_winner() == PLAYER_X else "O"} wins!' if game.check_winner() != DRAW_GAME else "It's a draw!"
+            draw_text(message, WIDTH // 2 - 100, HEIGHT // 2 - 20, 20, DARKGRAY)
+
+        end_drawing()
+
+    close_window()
+
 
 if __name__ == '__main__':
     main()
