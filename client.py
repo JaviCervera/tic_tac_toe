@@ -31,7 +31,7 @@ def main() -> None:
 
     while not window_should_close():
         if not game_over(game):
-            if is_mouse_button_down(MouseButton.MOUSE_BUTTON_LEFT):
+            if is_mouse_button_pressed(MouseButton.MOUSE_BUTTON_LEFT):
                 mouse_x = get_mouse_x()
                 mouse_y = get_mouse_y()
                 
@@ -39,14 +39,17 @@ def main() -> None:
                 row = mouse_y // CELL_SIZE
 
                 game.make_move(row, col)
-
+        
         begin_drawing()
         clear_background(RAYWHITE)
         draw_board(game.get_board())
 
         if game_over(game):
+            if is_mouse_button_pressed(MouseButton.MOUSE_BUTTON_RIGHT):
+                game.reset_game()
             message = f'Player {"X" if game.check_winner() == PLAYER_X else "O"} wins!' if game.check_winner() != DRAW_GAME else "It's a draw!"
             draw_text(message, WIDTH // 2 - 100, HEIGHT // 2 - 20, 20, DARKGRAY)
+            draw_text('Click right mouse button to reset', WIDTH // 2 - 100, HEIGHT // 2, 20, DARKGRAY)
 
         end_drawing()
 
