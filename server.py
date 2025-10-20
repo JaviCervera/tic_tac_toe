@@ -1,43 +1,40 @@
 from flask import Flask, jsonify, request
 
-from game import TicTacToe, TicTacToeImpl
+from game import (
+    InvalidMovementError,
+    InvalidPositionError,
+    move_impl,
+    Movement,
+    TicTacToeState,
+)
 
 app = Flask(__name__)
-game: TicTacToe = TicTacToeImpl()
 
 
-@app.route('/move', methods=['POST'])
+@app.route("/move", methods=["POST"])
 def move():
     data = request.get_json()
-    row, col = data['row'], data['col']
-    success = game.make_move(row, col)
-    if success:
-        return jsonify({
-            'board': game.get_board(),
-            'winner': game.check_winner(),
-            'current_player': game.get_current_player(),
-        }), 200
-    return jsonify({'error': 'Invalid move'}), 400
+    state = TicTacToeState(
+        board=data["board"],
+        current_player=data["current_player"],
+        winner=data["winner"],
+    )
+    try:
+        movement = Movement(data["row"], data["col"])
+    except InvalidPositionError as exc:
+        return jsonify({"error": str(exc)}), 400
+    try:
+        state = move_impl(state, movement)
+        return jsonify(
+            {
+                "board": state.board,
+                "current_player": state.current_player,
+                "winner": state.winner,
+            }
+        ), 200
+    except InvalidMovementError as exc:
+        return jsonify({"error": str(exc)}), 400
 
 
-@app.route('/board', methods=['GET'])
-def board():
-    return jsonify({
-        'board': game.get_board(),
-        'winner': game.check_winner(),
-        'current_player': game.get_current_player(),
-    }), 200
-
-
-@app.route('/reset', methods=['POST'])
-def reset():
-    game.reset_game()
-    return jsonify({
-        'board': game.get_board(),
-        'winner': game.check_winner(),
-        'current_player': game.get_current_player(),
-    }), 200
-
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run(debug=True)
