@@ -1,6 +1,14 @@
+# /// script
+# dependencies = [
+#     "cffi",
+#     "raylib"
+# ]
+# ///
+import asyncio
+
 from pyray import *
 
-from game import Board, DRAW_GAME, Player, PLAYER_O, PLAYER_X, TicTacToe, TicTacToeProxy
+from game import Board, DRAW_GAME, Player, PLAYER_O, PLAYER_X, TicTacToe, TicTacToeImpl, TicTacToeProxy
 
 WIDTH, HEIGHT = 600, 600
 GRID_SIZE = 3
@@ -23,8 +31,8 @@ def game_over(game: TicTacToe) -> bool:
     return game.check_winner() is not None
 
 
-def main() -> None:
-    game: TicTacToe = TicTacToeProxy('http://127.0.0.1:5000')
+async def main() -> None:
+    game: TicTacToe = TicTacToeImpl()  # Proxy('http://127.0.0.1:5000')
     
     init_window(WIDTH, HEIGHT, 'Tic Tac Toe')
     set_target_fps(60)
@@ -52,9 +60,10 @@ def main() -> None:
             draw_text('Click right mouse button to reset', WIDTH // 2 - 100, HEIGHT // 2, 20, DARKGRAY)
 
         end_drawing()
+        await asyncio.sleep(0)
 
     close_window()
 
 
-if __name__ == '__main__':
-    main()
+# if __name__ == '__main__':
+asyncio.run(main())

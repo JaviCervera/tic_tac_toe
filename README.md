@@ -1,2 +1,12 @@
-# tic_tac_toe
+# Tic Tac Toe
+
 A very simple Python implementation of Tic Tac Toe with client / server architecture
+
+It supports running on a web browser by transpiling the code to WebAssembly using [pygbag](https://pypi.org/project/pygbag/).
+You can install pygbag in the active venv and run from the root directory of the project (this assumes that the active Python
+is 3.12):
+
+```shell
+pip install pygbag
+python -m pygbag --PYBUILD 3.12 --ume_block 0 --template noctx.tmpl .
+```
