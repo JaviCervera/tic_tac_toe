@@ -27,7 +27,7 @@ def move_impl(state: TicTacToeState, movement: Movement) -> TicTacToeState:
 
 
 def check_winner(board: Board) -> Winner:
-    if not any(cell is None for row in board for cell in row):
+    if not any(cell is EMPTY for row in board for cell in row):
         # No empty cells, draw game
         return DRAW_GAME
     for i in range(GRID_SIZE):

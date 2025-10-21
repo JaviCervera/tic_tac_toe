@@ -44,3 +44,5 @@ class InvalidMovementError(Exception):
 
 
 TicTacToeMoveFunc = Callable[[TicTacToeState, Movement], TicTacToeState]
+TicTacToeSendStateFunc = Callable[[TicTacToeState], None]
+TicTacToeReceiveStateFunc = Callable[[], TicTacToeState | None]

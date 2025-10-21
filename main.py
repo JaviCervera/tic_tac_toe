@@ -11,6 +11,7 @@ from pyray import (
     DARKGRAY,
     RAYWHITE,
     RED,
+    KeyboardKey,
     MouseButton,
     begin_drawing,
     clear_background,
@@ -22,35 +23,29 @@ from pyray import (
     get_mouse_x,
     get_mouse_y,
     init_window,
+    is_key_pressed,
     is_mouse_button_pressed,
     set_target_fps,
     window_should_close,
 )
 
-from game import (
-    Board,
+from game.tic_tac_toe import (
     DRAW_GAME,
-    EMPTY,
     GRID_SIZE,
-    InvalidMovementError,
-    Movement,
     PLAYER_O,
     PLAYER_X,
+    Board,
+    Movement,
+    Player,
     TicTacToeState,
-    TicTacToeMoveFunc,
-    TicTacToeMoveProxy,
 )
+from game.move_impl import move_impl
+from game.tic_tac_toe_game import TicTacToeGame
+from game.receive_state_local import TicTacToeReceiveStateLocal
+from game.send_state_local import TicTacToeSendStateLocal
 
 WIDTH, HEIGHT = 600, 600
 CELL_SIZE = WIDTH // GRID_SIZE
-
-
-def new_state() -> TicTacToeState:
-    return TicTacToeState(
-        board=[[EMPTY] * GRID_SIZE for _ in range(GRID_SIZE)],
-        current_player=PLAYER_X,
-        winner=None,
-    )
 
 
 def draw_board(board: Board):
@@ -67,55 +62,89 @@ def draw_board(board: Board):
                 )
 
 
-def game_over(state: TicTacToeState) -> bool:
-    return state.winner is not None
+class TicTacToeGameLocal(TicTacToeGame):
+    def __init__(self) -> None:
+        queue: list[TicTacToeState] = []
+        super().__init__(
+            PLAYER_X,
+            move_impl,
+            TicTacToeReceiveStateLocal(queue),
+            TicTacToeSendStateLocal(queue),
+        )
+
+    def move(self, movement: Movement) -> bool:
+        result = super().move(movement)
+        if result is True:
+            self._player: Player = PLAYER_O if self._player == PLAYER_X else PLAYER_X
+        return result
+
+
+def create_default_game(player: Player | None) -> TicTacToeGame | None:
+    return TicTacToeGameLocal()
 
 
 async def main() -> None:
-    state: TicTacToeState = new_state()
-    move: TicTacToeMoveFunc = TicTacToeMoveProxy("http://127.0.0.1:5000")
+    game = create_default_game(None)
 
     init_window(WIDTH, HEIGHT, "Tic Tac Toe")
     set_target_fps(60)
 
     while not window_should_close():
-        if not game_over(state):
-            if is_mouse_button_pressed(MouseButton.MOUSE_BUTTON_LEFT):
-                mouse_x = get_mouse_x()
-                mouse_y = get_mouse_y()
-                col = mouse_x // CELL_SIZE
-                row = mouse_y // CELL_SIZE
-                try:
-                    state = move(state, Movement(row, col))
-                except InvalidMovementError as exc:
-                    print(exc)
+        if game is None:
+            if is_key_pressed(KeyboardKey.KEY_X):
+                game = create_default_game(PLAYER_X)
+            elif is_key_pressed(KeyboardKey.KEY_O):
+                game = create_default_game(PLAYER_O)
 
-        begin_drawing()
-        clear_background(RAYWHITE)
-        draw_board(state.board)
-
-        if game_over(state):
-            if is_mouse_button_pressed(MouseButton.MOUSE_BUTTON_RIGHT):
-                state = new_state()
-            message = (
-                f"Player {'X' if state.winner == PLAYER_X else 'O'} wins!"
-                if state.winner != DRAW_GAME
-                else "It's a draw!"
-            )
-            draw_text(message, WIDTH // 2 - 100, HEIGHT // 2 - 20, 20, DARKGRAY)
+            begin_drawing()
+            clear_background(RAYWHITE)
             draw_text(
-                "Click right mouse button to reset",
+                "Press X to start game",
                 WIDTH // 2 - 100,
-                HEIGHT // 2,
+                HEIGHT // 2 - 20,
                 20,
                 DARKGRAY,
             )
+            draw_text(
+                "Press O to join game", WIDTH // 2 - 100, HEIGHT // 2, 20, DARKGRAY
+            )
+            end_drawing()
+        else:
+            if not game.game_over():
+                game.update()
+                if is_mouse_button_pressed(MouseButton.MOUSE_BUTTON_LEFT):
+                    mouse_x = get_mouse_x()
+                    mouse_y = get_mouse_y()
+                    col = mouse_x // CELL_SIZE
+                    row = mouse_y // CELL_SIZE
+                    if not game.move(Movement(row, col)):
+                        print("Invalid movement")
 
-        end_drawing()
+            begin_drawing()
+            clear_background(RAYWHITE)
+            draw_board(game.state.board)
+
+            if game.game_over():
+                if is_mouse_button_pressed(MouseButton.MOUSE_BUTTON_RIGHT):
+                    game = create_default_game(None)
+                else:
+                    if game.state.winner != DRAW_GAME:
+                        message = f"Player {'X' if game.state.winner == PLAYER_X else 'O'} wins!"
+                    else:
+                        message = "It's a draw!"
+                    draw_text(message, WIDTH // 2 - 100, HEIGHT // 2 - 20, 20, DARKGRAY)
+                    draw_text(
+                        "Click right mouse button to reset",
+                        WIDTH // 2 - 100,
+                        HEIGHT // 2,
+                        20,
+                        DARKGRAY,
+                    )
+
+            end_drawing()
         await asyncio.sleep(0)
 
     close_window()
 
 
-# if __name__ == '__main__':
 asyncio.run(main())
