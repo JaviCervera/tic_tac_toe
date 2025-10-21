@@ -34,7 +34,7 @@ def check_winner(board: Board) -> Winner:
         if (board[i][0] == board[i][1] == board[i][2] != EMPTY) or (
             board[0][i] == board[1][i] == board[2][i] != EMPTY
         ):
-            return board[i][0] if board[i][0] != EMPTY else board[0][i]
+            return board[i][0] if board[i][0] == board[i][1] else board[0][i]
     if (board[0][0] == board[1][1] == board[2][2] != EMPTY) or (
         board[0][2] == board[1][1] == board[2][0] != EMPTY
     ):
