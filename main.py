@@ -6,28 +6,7 @@
 # ///
 import asyncio
 
-from pyray import (
-    BLUE,
-    DARKGRAY,
-    RAYWHITE,
-    RED,
-    KeyboardKey,
-    MouseButton,
-    begin_drawing,
-    clear_background,
-    close_window,
-    draw_circle,
-    draw_line,
-    draw_text,
-    end_drawing,
-    get_mouse_x,
-    get_mouse_y,
-    init_window,
-    is_key_pressed,
-    is_mouse_button_pressed,
-    set_target_fps,
-    window_should_close,
-)
+import pyray as rl
 
 from game.tic_tac_toe import (
     DRAW_GAME,
@@ -54,11 +33,15 @@ def draw_board(board: Board):
             x = col * CELL_SIZE
             y = row * CELL_SIZE
             if board[row][col] == PLAYER_X:
-                draw_line(x + 20, y + 20, x + CELL_SIZE - 20, y + CELL_SIZE - 20, RED)
-                draw_line(x + CELL_SIZE - 20, y + 20, x + 20, y + CELL_SIZE - 20, RED)
+                rl.draw_line(
+                    x + 20, y + 20, x + CELL_SIZE - 20, y + CELL_SIZE - 20, rl.RED
+                )
+                rl.draw_line(
+                    x + CELL_SIZE - 20, y + 20, x + 20, y + CELL_SIZE - 20, rl.RED
+                )
             elif board[row][col] == PLAYER_O:
-                draw_circle(
-                    x + CELL_SIZE // 2, y + CELL_SIZE // 2, CELL_SIZE // 2 - 20, BLUE
+                rl.draw_circle(
+                    x + CELL_SIZE // 2, y + CELL_SIZE // 2, CELL_SIZE // 2 - 20, rl.BLUE
                 )
 
 
@@ -86,65 +69,67 @@ def create_default_game(player: Player | None) -> TicTacToeGame | None:
 async def main() -> None:
     game = create_default_game(None)
 
-    init_window(WIDTH, HEIGHT, "Tic Tac Toe")
-    set_target_fps(60)
+    rl.init_window(WIDTH, HEIGHT, "Tic Tac Toe")
+    rl.set_target_fps(60)
 
-    while not window_should_close():
+    while not rl.window_should_close():
         if game is None:
-            if is_key_pressed(KeyboardKey.KEY_X):
+            if rl.is_key_pressed(rl.KeyboardKey.KEY_X):
                 game = create_default_game(PLAYER_X)
-            elif is_key_pressed(KeyboardKey.KEY_O):
+            elif rl.is_key_pressed(rl.KeyboardKey.KEY_O):
                 game = create_default_game(PLAYER_O)
 
-            begin_drawing()
-            clear_background(RAYWHITE)
-            draw_text(
+            rl.begin_drawing()
+            rl.clear_background(rl.RAYWHITE)
+            rl.draw_text(
                 "Press X to start game",
                 WIDTH // 2 - 100,
                 HEIGHT // 2 - 20,
                 20,
-                DARKGRAY,
+                rl.DARKGRAY,
             )
-            draw_text(
-                "Press O to join game", WIDTH // 2 - 100, HEIGHT // 2, 20, DARKGRAY
+            rl.draw_text(
+                "Press O to join game", WIDTH // 2 - 100, HEIGHT // 2, 20, rl.DARKGRAY
             )
-            end_drawing()
+            rl.end_drawing()
         else:
             if not game.game_over():
                 game.update()
-                if is_mouse_button_pressed(MouseButton.MOUSE_BUTTON_LEFT):
-                    mouse_x = get_mouse_x()
-                    mouse_y = get_mouse_y()
+                if rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
+                    mouse_x = rl.get_mouse_x()
+                    mouse_y = rl.get_mouse_y()
                     col = mouse_x // CELL_SIZE
                     row = mouse_y // CELL_SIZE
                     if not game.move(Movement(row, col)):
                         print("Invalid movement")
 
-            begin_drawing()
-            clear_background(RAYWHITE)
+            rl.begin_drawing()
+            rl.clear_background(rl.RAYWHITE)
             draw_board(game.state.board)
 
             if game.game_over():
-                if is_mouse_button_pressed(MouseButton.MOUSE_BUTTON_RIGHT):
+                if rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_RIGHT):
                     game = create_default_game(None)
                 else:
                     if game.state.winner != DRAW_GAME:
                         message = f"Player {'X' if game.state.winner == PLAYER_X else 'O'} wins!"
                     else:
                         message = "It's a draw!"
-                    draw_text(message, WIDTH // 2 - 100, HEIGHT // 2 - 20, 20, DARKGRAY)
-                    draw_text(
+                    rl.draw_text(
+                        message, WIDTH // 2 - 100, HEIGHT // 2 - 20, 20, rl.DARKGRAY
+                    )
+                    rl.draw_text(
                         "Click right mouse button to reset",
                         WIDTH // 2 - 100,
                         HEIGHT // 2,
                         20,
-                        DARKGRAY,
+                        rl.DARKGRAY,
                     )
 
-            end_drawing()
+            rl.end_drawing()
         await asyncio.sleep(0)
 
-    close_window()
+    rl.close_window()
 
 
 asyncio.run(main())
