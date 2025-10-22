@@ -14,5 +14,9 @@ python -m pygbag --PYBUILD 3.12 --ume_block 0 --template noctx.tmpl .
 ## Kafka
 
 * [Download Kafka](https://www.apache.org/dyn/closer.cgi?path=/kafka/4.1.0/kafka_2.13-4.1.0.tgz).
-* Create topic: `bin/kafka-topics.sh --create --topic tic-tac-toe --bootstrap-server localhost:9092 --partitions 1 --replication-factor 1`
-* 
+* Decompress the package and cd into Kafka's dir.
+* Generate cluster UUID: `KAFKA_CLUSTER_ID="$(bin/kafka-storage.sh random-uuid)"`
+* Format log directories: `bin/kafka-storage.sh format --standalone -t $KAFKA_CLUSTER_ID -c config/server.properties` 
+* Start server: `bin/kafka-server-start.sh config/server.properties`
+
+Then, start two instances of *main.py*, selecting X in one and O in the other to have the two players.

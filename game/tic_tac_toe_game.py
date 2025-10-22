@@ -39,9 +39,11 @@ class TicTacToeGame:
         return self._player
 
     def update(self) -> None:
-        received_state = self._receive_state()
-        if received_state:
-            self._state = received_state
+        if self._state.current_player != self._player:
+            received_state = self._receive_state()
+            while received_state is not None:
+                self._state = received_state
+                received_state = self._receive_state()
 
     def move(self, movement: Movement) -> bool:
         if self._state.current_player == self._player:

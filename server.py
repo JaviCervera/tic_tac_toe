@@ -1,12 +1,12 @@
 from flask import Flask, jsonify, request
 
-from game import (
+from game.tic_tac_toe import (
     InvalidMovementError,
     InvalidPositionError,
-    move_impl,
     Movement,
     TicTacToeState,
 )
+from game.move_impl import move_impl
 
 app = Flask(__name__)
 

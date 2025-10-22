@@ -8,6 +8,9 @@ import asyncio
 
 import pyray as rl
 
+from client.move_proxy import TicTacToeMoveProxy
+from client.receive_state_local import TicTacToeReceiveStateLocal
+from client.send_state_local import TicTacToeSendStateLocal
 from game.tic_tac_toe import (
     DRAW_GAME,
     GRID_SIZE,
@@ -20,11 +23,13 @@ from game.tic_tac_toe import (
 )
 from game.move_impl import move_impl
 from game.tic_tac_toe_game import TicTacToeGame
-from game.receive_state_local import TicTacToeReceiveStateLocal
-from game.send_state_local import TicTacToeSendStateLocal
 
 WIDTH, HEIGHT = 600, 600
 CELL_SIZE = WIDTH // GRID_SIZE
+
+
+def player_str(player: Player) -> str:
+    return "X" if player == PLAYER_X else "O"
 
 
 def draw_board(board: Board):
@@ -62,12 +67,34 @@ class TicTacToeGameLocal(TicTacToeGame):
         return result
 
 
-def create_default_game(player: Player | None) -> TicTacToeGame | None:
-    return TicTacToeGameLocal()
+def create_server_game(player: Player) -> TicTacToeGame:
+    from client.receive_state_kafka import TicTacToeReceiveStateKafka
+    from client.send_state_kafka import TicTacToeSendStateKafka
+    from client.kafka_topic import create_topic, delete_topic
+
+    SERVER_URL = "http://127.0.0.1:5000"
+    KAFKA_URL = "localhost:9092"
+    KAFKA_TOPIC = "tic-tac-toe"
+    delete_topic(KAFKA_URL, KAFKA_TOPIC)
+    create_topic(KAFKA_URL, KAFKA_TOPIC)
+    return TicTacToeGame(
+        player=player,
+        move_func=TicTacToeMoveProxy(SERVER_URL),
+        receive_state_func=TicTacToeReceiveStateKafka(KAFKA_URL, KAFKA_TOPIC),
+        send_state_func=TicTacToeSendStateKafka(KAFKA_URL, KAFKA_TOPIC),
+    )
+
+
+def create_game(player: Player | None) -> TicTacToeGame | None:
+    # return TicTacToeGameLocal()
+    if player is None:
+        return None
+    else:
+        return create_server_game(player)
 
 
 async def main() -> None:
-    game = create_default_game(None)
+    game = create_game(None)
 
     rl.init_window(WIDTH, HEIGHT, "Tic Tac Toe")
     rl.set_target_fps(60)
@@ -75,9 +102,9 @@ async def main() -> None:
     while not rl.window_should_close():
         if game is None:
             if rl.is_key_pressed(rl.KeyboardKey.KEY_X):
-                game = create_default_game(PLAYER_X)
+                game = create_game(PLAYER_X)
             elif rl.is_key_pressed(rl.KeyboardKey.KEY_O):
-                game = create_default_game(PLAYER_O)
+                game = create_game(PLAYER_O)
 
             rl.begin_drawing()
             rl.clear_background(rl.RAYWHITE)
@@ -109,10 +136,10 @@ async def main() -> None:
 
             if game.game_over():
                 if rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_RIGHT):
-                    game = create_default_game(None)
+                    game = create_game(None)
                 else:
                     if game.state.winner != DRAW_GAME:
-                        message = f"Player {'X' if game.state.winner == PLAYER_X else 'O'} wins!"
+                        message = f"Player {player_str(game.state.winner)} wins!"
                     else:
                         message = "It's a draw!"
                     rl.draw_text(
@@ -126,7 +153,7 @@ async def main() -> None:
                         rl.DARKGRAY,
                     )
             else:
-                message = f"Player {'X' if game.state.current_player == PLAYER_X else 'O'} turn"
+                message = f"Player: {player_str(game.player)} -- Turn: {player_str(game.state.current_player)}"
                 rl.draw_text(
                     message,
                     (WIDTH - rl.measure_text(message, 20)) // 2,

@@ -1,4 +1,4 @@
-from .tic_tac_toe import TicTacToeState
+from game.tic_tac_toe import TicTacToeState
 
 
 class TicTacToeReceiveStateLocal:

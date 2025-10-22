@@ -2,12 +2,12 @@ import json
 
 from kafka import KafkaProducer
 
-from .tic_tac_toe import TicTacToeState
+from game.tic_tac_toe import TicTacToeState
 
 
 class TicTacToeSendStateKafka:
     def __init__(self, url: str, topic: str):
-        self._producer = KafkaProducer(url)
+        self._producer = KafkaProducer(bootstrap_servers=url)
         self._topic = topic
 
     def __call__(self, state: TicTacToeState) -> None:
