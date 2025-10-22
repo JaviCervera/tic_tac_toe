@@ -1,0 +1,5 @@
+DRAW_GAME = -1
+EMPTY = None
+GRID_SIZE = 3
+PLAYER_X = 1
+PLAYER_O = 2

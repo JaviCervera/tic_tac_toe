@@ -27,14 +27,13 @@ python -m pygbag --PYBUILD 3.12 --ume_block 0 --template noctx.tmpl .
 * [Download Kafka](https://www.apache.org/dyn/closer.cgi?path=/kafka/4.1.0/kafka_2.13-4.1.0.tgz).
 * Decompress the package and cd into Kafka's dir.
 * Generate cluster UUID: `KAFKA_CLUSTER_ID="$(bin/kafka-storage.sh random-uuid)"`
-* Format log directories: `bin/kafka-storage.sh format --standalone -t $KAFKA_CLUSTER_ID -c config/server.properties` 
+* Format log directories: `bin/kafka-storage.sh format --standalone -t $KAFKA_CLUSTER_ID -c config/server.properties`
 * Start server: `bin/kafka-server-start.sh config/server.properties`
 
 Then, start two instances of *main.py*, selecting X in one and O in the other to have the two players.
 
 ## TODO
 
-* Client / Server classes (LocalClient / KafkaClient; LocalServer / FlaskServer)?
 * Logging.
 * Server deployment on Render or Railway.
 * Check web render offset (input is at top left, rendering is at bottom left).

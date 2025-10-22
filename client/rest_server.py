@@ -1,15 +1,19 @@
 import requests
 
-from game.tic_tac_toe import InvalidMovementError, Movement, TicTacToeState
+from game.movement import Movement
+from game.server import Server
+from game.tic_tac_toe_state import TicTacToeState
 
 
-class TicTacToeMoveProxy:
-    def __init__(self, url: str):
-        self._base_url = url
+class RestServer(Server):
+    def __init__(self, url: str) -> None:
+        self._url = url
 
-    def __call__(self, state: TicTacToeState, movement: Movement) -> TicTacToeState:
+    def send_movement(
+        self, state: TicTacToeState, movement: Movement
+    ) -> TicTacToeState | None:
         response = requests.post(
-            f"{self._base_url}/move",
+            self._url,
             json={
                 "board": state.board,
                 "current_player": state.current_player,
@@ -24,5 +28,4 @@ class TicTacToeMoveProxy:
                 current_player=response.json()["current_player"],
                 winner=response.json()["winner"],
             )
-        else:
-            raise InvalidMovementError(movement)
+        return None

@@ -8,20 +8,10 @@ import asyncio
 
 import pyray as rl
 
-from client.move_proxy import TicTacToeMoveProxy
-from client.receive_state_local import TicTacToeReceiveStateLocal
-from client.send_state_local import TicTacToeSendStateLocal
-from game.tic_tac_toe import (
-    DRAW_GAME,
-    GRID_SIZE,
-    PLAYER_O,
-    PLAYER_X,
-    Board,
-    Movement,
-    Player,
-    TicTacToeState,
-)
-from game.move_impl import move_impl
+from game.board import Board
+from game.constants import DRAW_GAME, GRID_SIZE, PLAYER_O, PLAYER_X
+from game.movement import Movement
+from game.player import Player
 from game.tic_tac_toe_game import TicTacToeGame
 
 WIDTH, HEIGHT = 600, 600
@@ -50,43 +40,26 @@ def draw_board(board: Board):
                 )
 
 
-class TicTacToeGameLocal(TicTacToeGame):
-    def __init__(self) -> None:
-        queue: list[TicTacToeState] = []
-        super().__init__(
-            PLAYER_X,
-            move_impl,
-            TicTacToeReceiveStateLocal(queue),
-            TicTacToeSendStateLocal(queue),
-        )
+def create_local_game() -> TicTacToeGame:
+    from client.local_game import LocalGame
 
-    def move(self, movement: Movement) -> bool:
-        result = super().move(movement)
-        if result is True:
-            self._player: Player = PLAYER_O if self._player == PLAYER_X else PLAYER_X
-        return result
+    return LocalGame()
 
 
 def create_server_game(player: Player) -> TicTacToeGame:
-    from client.receive_state_kafka import TicTacToeReceiveStateKafka
-    from client.send_state_kafka import TicTacToeSendStateKafka
-    from client.kafka_topic import create_topic, delete_topic
+    from client.kafka_client import KafkaClient
+    from client.rest_server import RestServer
 
-    SERVER_URL = "http://127.0.0.1:5000"
+    SERVER_URL = "http://127.0.0.1:5000/move"
     KAFKA_URL = "localhost:9092"
     KAFKA_TOPIC = "tic-tac-toe"
-    delete_topic(KAFKA_URL, KAFKA_TOPIC)
-    create_topic(KAFKA_URL, KAFKA_TOPIC)
     return TicTacToeGame(
-        player=player,
-        move_func=TicTacToeMoveProxy(SERVER_URL),
-        receive_state_func=TicTacToeReceiveStateKafka(KAFKA_URL, KAFKA_TOPIC),
-        send_state_func=TicTacToeSendStateKafka(KAFKA_URL, KAFKA_TOPIC),
+        player, KafkaClient(KAFKA_URL, KAFKA_TOPIC), RestServer(SERVER_URL)
     )
 
 
 def create_game(player: Player | None) -> TicTacToeGame | None:
-    # return TicTacToeGameLocal()
+    return create_local_game()
     if player is None:
         return None
     else:
