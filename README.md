@@ -34,6 +34,7 @@ Then, start two instances of *main.py*, selecting X in one and O in the other to
 
 ## TODO
 
+* Client / Server classes (LocalClient / KafkaClient; LocalServer / FlaskServer)?
 * Logging.
 * Server deployment on Render or Railway.
 * Check web render offset (input is at top left, rendering is at bottom left).
