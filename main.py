@@ -125,6 +125,15 @@ async def main() -> None:
                         20,
                         rl.DARKGRAY,
                     )
+            else:
+                message = f"Player {'X' if game.state.current_player == PLAYER_X else 'O'} turn"
+                rl.draw_text(
+                    message,
+                    (WIDTH - rl.measure_text(message, 20)) // 2,
+                    HEIGHT - 32,
+                    20,
+                    rl.DARKGRAY,
+                )
 
             rl.end_drawing()
         await asyncio.sleep(0)
