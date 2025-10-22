@@ -1,0 +1,6 @@
+{
+  "local": true,
+  "kafka_url": "localhost:9092",
+  "kafka_topic": "tic-tac-toe",
+  "server_url": "http://127.0.0.1:5000/move"
+}

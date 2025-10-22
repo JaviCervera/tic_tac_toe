@@ -8,6 +8,7 @@ import asyncio
 
 import pyray as rl
 
+from client.config import Config, load_config
 from game.board import Board
 from game.constants import DRAW_GAME, GRID_SIZE, PLAYER_O, PLAYER_X
 from game.movement import Movement
@@ -46,28 +47,29 @@ def create_local_game() -> TicTacToeGame:
     return LocalGame()
 
 
-def create_server_game(player: Player) -> TicTacToeGame:
+def create_server_game(config: Config, player: Player) -> TicTacToeGame:
     from client.kafka_client import KafkaClient
     from client.rest_server import RestServer
 
-    SERVER_URL = "http://127.0.0.1:5000/move"
-    KAFKA_URL = "localhost:9092"
-    KAFKA_TOPIC = "tic-tac-toe"
     return TicTacToeGame(
-        player, KafkaClient(KAFKA_URL, KAFKA_TOPIC), RestServer(SERVER_URL)
+        player,
+        KafkaClient(config.kafka_url, config.kafka_topic),
+        RestServer(config.server_url),
     )
 
 
-def create_game(player: Player | None) -> TicTacToeGame | None:
-    return create_local_game()
-    if player is None:
+def create_game(config: Config, player: Player | None) -> TicTacToeGame | None:
+    if config.local:
+        return create_local_game()
+    elif player is None:
         return None
     else:
-        return create_server_game(player)
+        return create_server_game(config, player)
 
 
 async def main() -> None:
-    game = create_game(None)
+    config = load_config("config.json")
+    game = create_game(config, None)
 
     rl.init_window(WIDTH, HEIGHT, "Tic Tac Toe")
     rl.set_target_fps(60)
@@ -75,9 +77,9 @@ async def main() -> None:
     while not rl.window_should_close():
         if game is None:
             if rl.is_key_pressed(rl.KeyboardKey.KEY_X):
-                game = create_game(PLAYER_X)
+                game = create_game(config, PLAYER_X)
             elif rl.is_key_pressed(rl.KeyboardKey.KEY_O):
-                game = create_game(PLAYER_O)
+                game = create_game(config, PLAYER_O)
 
             rl.begin_drawing()
             rl.clear_background(rl.RAYWHITE)
@@ -109,7 +111,7 @@ async def main() -> None:
 
             if game.game_over():
                 if rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_RIGHT):
-                    game = create_game(None)
+                    game = create_game(config, None)
                 else:
                     if game.state.winner != DRAW_GAME:
                         message = f"Player {player_str(game.state.winner)} wins!"
