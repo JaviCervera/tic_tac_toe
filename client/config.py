@@ -4,7 +4,7 @@ import json
 
 @dataclass(frozen=True)
 class Config:
-    local: bool
+    local: bool = False
     kafka_url: str = ""
     kafka_topic: str = ""
     server_url: str = ""
@@ -21,10 +21,10 @@ def load_config(filename: str) -> Config:
         with open(filename) as f:
             data = json.load(f)
         return Config(
-            local=data["local"],
-            kafka_url=data["kafka_url"],
-            kafka_topic=data["kafka_topic"],
-            server_url=data["server_url"],
+            local=data.get("local", False),
+            kafka_url=data.get("kafka_url", ""),
+            kafka_topic=data.get("kafka_topic", ""),
+            server_url=data.get("server_url", ""),
         )
     except FileNotFoundError:
         return Config(local=True)
