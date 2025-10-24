@@ -5,10 +5,13 @@
 # ]
 # ///
 import asyncio
+import logging
 
 import pyray as rl
 
 from client.config import Config, load_config
+from client.logged_client import LoggedClient
+from client.logged_server import LoggedServer
 from game.board import Board
 from game.constants import DRAW_GAME, GRID_SIZE, PLAYER_O, PLAYER_X
 from game.movement import Movement
@@ -17,6 +20,16 @@ from game.tic_tac_toe_game import TicTacToeGame
 
 WIDTH, HEIGHT = 600, 600
 CELL_SIZE = WIDTH // GRID_SIZE
+
+
+def init_logger(level: int) -> logging.Logger:
+    logger = logging.getLogger(__name__)
+    logger.setLevel(level)
+    console_handler = logging.StreamHandler()
+    formatter = logging.Formatter("%(levelname)s: %(message)s")
+    console_handler.setFormatter(formatter)
+    logger.addHandler(console_handler)
+    return logger
 
 
 def player_str(player: Player) -> str:
@@ -41,45 +54,51 @@ def draw_board(board: Board):
                 )
 
 
-def create_local_game() -> TicTacToeGame:
+def create_local_game(logger: logging.Logger) -> TicTacToeGame:
     from client.local_game import LocalGame
 
-    return LocalGame()
+    return LocalGame(logger)
 
 
-def create_server_game(config: Config, player: Player) -> TicTacToeGame:
+def create_server_game(
+    config: Config, player: Player, logger: logging.Logger
+) -> TicTacToeGame:
     from client.kafka_client import KafkaClient
     from client.rest_server import RestServer
 
     return TicTacToeGame(
         player,
-        KafkaClient(config.kafka_url, config.kafka_topic),
-        RestServer(config.server_url),
+        LoggedClient(KafkaClient(config.kafka_url, config.kafka_topic), logger),
+        LoggedServer(RestServer(config.server_url), logger),
     )
 
 
-def create_game(config: Config, player: Player | None) -> TicTacToeGame | None:
+def create_game(
+    config: Config, player: Player | None, logger: logging.Logger
+) -> TicTacToeGame | None:
     if config.local:
-        return create_local_game()
+        return create_local_game(logger)
     elif player is None:
         return None
     else:
-        return create_server_game(config, player)
+        return create_server_game(config, player, logger)
 
 
 async def main() -> None:
+    logger = init_logger(logging.INFO)
     config = load_config("config.json")
-    game = create_game(config, None)
+    game = create_game(config, None, logger)
 
+    rl.set_trace_log_level(rl.TraceLogLevel.LOG_NONE)
     rl.init_window(WIDTH, HEIGHT, "Tic Tac Toe")
     rl.set_target_fps(60)
 
     while not rl.window_should_close():
         if game is None:
             if rl.is_key_pressed(rl.KeyboardKey.KEY_X):
-                game = create_game(config, PLAYER_X)
+                game = create_game(config, PLAYER_X, logger)
             elif rl.is_key_pressed(rl.KeyboardKey.KEY_O):
-                game = create_game(config, PLAYER_O)
+                game = create_game(config, PLAYER_O, logger)
 
             rl.begin_drawing()
             rl.clear_background(rl.RAYWHITE)
@@ -111,7 +130,7 @@ async def main() -> None:
 
             if game.game_over():
                 if rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_RIGHT):
-                    game = create_game(config, None)
+                    game = create_game(config, None, logger)
                 else:
                     if game.state.winner != DRAW_GAME:
                         message = f"Player {player_str(game.state.winner)} wins!"
