@@ -8,18 +8,14 @@ services:
       - KAFKA_HOST=kafka:9092
 
   kafka:
-    image: wurstmeister/kafka:2.13-2.8.1
+    image: confluentinc/cp-kafka:latest
     ports:
       - "9092:9092" # Exposed port for external clients
       - "9093:9093" # Internal broker communication port
-    environment:
-      KAFKA_ADVERTISED_LISTENERS: INSIDE://kafka:9093,OUTSIDE://localhost:9092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
-      KAFKA_LISTENERS: INSIDE://0.0.0.0:9093,OUTSIDE://0.0.0.0:9092
-      KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+    command: [ "sh", "-c", "kafka-storage format -t my-kraft-cluster-id -c /etc/kafka/kraft.properties; kafka-server-start /etc/kafka/kraft.properties" ]
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+      - ./container-config/kraft.properties:/etc/kafka/kraft.properties
 
-  zookeeper:
-    image: zookeeper:3.8.0
-    ports:
-      - "2181:2181"
+volumes:
+  kafka-data:
