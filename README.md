@@ -2,15 +2,15 @@
 
 A very simple Python implementation of Tic Tac Toe with client / server architecture.
 
-The server is stateless. All game state must be shared between the players (by default, a Kafka topic
-is used for this).
+The server is stateless. All game state must be shared between the players (in local mode, state is shared directly
+between players; in server mode, a Kafka topic is used).
 
-Also, the game can be ran in local mode, simply by removing the comment on the first line of the `create_game`
-function on *main.py*:
+There is a *config.json* file at the root to configure the client. To run in local mode, set `local` to `true`.
+To play using a Flask server and a Kafka topic, the simplest approach is to install Docker and run `docker compose up -d`.
 
-```python
-# return TicTacToeGameLocal()
-```
+In local mode, `python main.py` must be triggered once to start playing. When using a server, two instances must be launched,
+selecting "X" on one to create a game and play as first player, and "O" on the other to join the existing game and play as
+the second player.
 
 It supports running on a web browser by transpiling the code to WebAssembly using [pygbag](https://pypi.org/project/pygbag/).
 For this, the game must be ran in local mode (check previous paragraph).
@@ -22,7 +22,9 @@ pip install pygbag
 python -m pygbag --PYBUILD 3.12 --ume_block 0 --template noctx.tmpl .
 ```
 
-## Kafka
+## Kafka setup
+
+> NOTE: These are old instructions, you should use `docker compose up -d` to launch Flask and Kafka servers now.
 
 * [Download Kafka](https://www.apache.org/dyn/closer.cgi?path=/kafka/4.1.0/kafka_2.13-4.1.0.tgz).
 * Decompress the package and cd into Kafka's dir.

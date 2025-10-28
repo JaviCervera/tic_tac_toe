@@ -68,7 +68,10 @@ def create_server_game(
 
     return TicTacToeGame(
         player,
-        LoggedClient(KafkaClient(config.kafka_url, config.kafka_topic), logger),
+        LoggedClient(
+            KafkaClient(config.kafka_url, config.kafka_topic, player == PLAYER_X),
+            logger,
+        ),
         LoggedServer(RestServer(config.server_url), logger),
     )
 

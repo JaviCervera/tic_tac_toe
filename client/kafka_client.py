@@ -9,11 +9,12 @@ from game.tic_tac_toe_state import TicTacToeState
 
 
 class KafkaClient(Client):
-    def __init__(self, url: str, topic: str) -> None:
+    def __init__(self, url: str, topic: str, recreate_topic: bool) -> None:
         self._url = url
         self._topic = topic
-        self._delete_topic()
-        self._create_topic()
+        if recreate_topic:
+            self._delete_topic()
+            self._create_topic()
         self._producer = KafkaProducer(bootstrap_servers=url)
         self._consumer = KafkaConsumer(
             topic,
