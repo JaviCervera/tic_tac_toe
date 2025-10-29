@@ -1,4 +1,6 @@
 import json
+import threading
+import queue
 
 from kafka import KafkaConsumer, KafkaProducer
 from kafka.admin import KafkaAdminClient, NewTopic
@@ -22,6 +24,10 @@ class KafkaClient(Client):
             auto_offset_reset="earliest",
             enable_auto_commit=True,
         )
+        self._queue: queue.Queue = queue.Queue()
+        self._stop_event = threading.Event()
+        self._thread = threading.Thread(target=self._consume_messages)
+        self._thread.start()
 
     def send_state(self, state: TicTacToeState) -> None:
         self._producer.send(
@@ -38,16 +44,15 @@ class KafkaClient(Client):
 
     def receive_state(self) -> TicTacToeState | None:
         state: TicTacToeState | None = None
-        topics = self._consumer.poll(timeout_ms=5)
-        for _, messages in topics.items():
-            for message in messages:
-                json_state = json.loads(message.value.decode("utf-8"))
-                state = TicTacToeState(
-                    board=json_state["board"],
-                    current_player=json_state["current_player"],
-                    winner=json_state["winner"],
-                )
+        while not self._queue.empty():
+            state = self._queue.get()
         return state
+
+    def close(self) -> None:
+        self._stop_event.set()
+        self._thread.join()
+        self._consumer.close()
+        self._producer.close()
 
     def _delete_topic(self) -> None:
         client = KafkaAdminClient(bootstrap_servers=self._url)
@@ -69,3 +74,16 @@ class KafkaClient(Client):
             client.create_topics([topic])
         finally:
             client.close()
+
+    def _consume_messages(self) -> None:
+        while not self._stop_event.is_set():
+            messages = self._consumer.poll(timeout_ms=5.0)
+            for tp, message_list in messages.items():
+                for message in message_list:
+                    json_state = json.loads(message.value.decode("utf-8"))
+                    state = TicTacToeState(
+                        board=json_state["board"],
+                        current_player=json_state["current_player"],
+                        winner=json_state["winner"],
+                    )
+                    self._queue.put(state)

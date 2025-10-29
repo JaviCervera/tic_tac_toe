@@ -11,3 +11,7 @@ class Client(ABC):
     @abstractmethod
     def receive_state(self) -> TicTacToeState | None:
         pass
+
+    @abstractmethod
+    def close(self) -> None:
+        pass

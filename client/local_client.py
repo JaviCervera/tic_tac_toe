@@ -15,3 +15,6 @@ class LocalClient(Client):
             self._next_index += 1
             return self._queue[self._next_index - 1]
         return None
+
+    def close(self) -> None:
+        pass

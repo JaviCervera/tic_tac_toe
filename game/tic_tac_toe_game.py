@@ -47,3 +47,6 @@ class TicTacToeGame:
 
     def game_over(self) -> bool:
         return self._state.winner is not None
+
+    def close(self) -> None:
+        self._client.close()

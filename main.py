@@ -133,6 +133,7 @@ async def main() -> None:
 
             if game.game_over():
                 if rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_RIGHT):
+                    game.close()
                     game = create_game(config, None, logger)
                 else:
                     if game.state.winner != DRAW_GAME:

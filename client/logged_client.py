@@ -22,5 +22,9 @@ class LoggedClient(Client):
             self._logger.debug(msg)
         return state
 
+    def close(self) -> None:
+        self._logger.info(f"{self._client_type()}.close()")
+        self._client.close()
+
     def _client_type(self) -> str:
         return type(self._client).__name__
