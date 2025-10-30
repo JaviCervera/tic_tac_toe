@@ -11,6 +11,7 @@ class SocketsServer:
         logger.info(f"SocketsServer.init({port})")
         self._logger = logger
         self._server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self._server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self._server.setblocking(False)
         self._server.bind(("0.0.0.0", port))
         self._server.listen(2)
