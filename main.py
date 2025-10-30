@@ -9,6 +9,7 @@ import logging
 
 import pyray as rl
 
+from game.client import Client
 from game.config import Config, load_config
 from game.logged.logged_client import LoggedClient
 from game.board import Board
@@ -59,18 +60,12 @@ def create_local_game(logger: logging.Logger) -> TicTacToeGame:
     return LocalGame(logger)
 
 
-def create_online_game(
+def create_remote_game(
     config: Config, player: Player, logger: logging.Logger
 ) -> TicTacToeGame:
-    from game.kafka.kafka_client import KafkaClient
+    from game.remote.remote_game import RemoteGame
 
-    return TicTacToeGame(
-        player,
-        LoggedClient(
-            KafkaClient(config.kafka_url, config.kafka_topic, player == PLAYER_X),
-            logger,
-        ),
-    )
+    return RemoteGame(config, player, logger)
 
 
 def create_game(
@@ -81,7 +76,7 @@ def create_game(
     elif player is None:
         return None
     else:
-        return create_online_game(config, player, logger)
+        return create_remote_game(config, player, logger)
 
 
 async def main() -> None:
@@ -89,78 +84,86 @@ async def main() -> None:
     config = load_config("config.json")
     game = create_game(config, None, logger)
 
-    rl.set_trace_log_level(rl.TraceLogLevel.LOG_NONE)
-    rl.init_window(WIDTH, HEIGHT, "Tic Tac Toe")
-    rl.set_target_fps(60)
+    try:
+        rl.set_trace_log_level(rl.TraceLogLevel.LOG_NONE)
+        rl.init_window(WIDTH, HEIGHT, "Tic Tac Toe")
+        rl.set_target_fps(60)
 
-    while not rl.window_should_close():
-        if game is None:
-            if rl.is_key_pressed(rl.KeyboardKey.KEY_X):
-                game = create_game(config, PLAYER_X, logger)
-            elif rl.is_key_pressed(rl.KeyboardKey.KEY_O):
-                game = create_game(config, PLAYER_O, logger)
+        while not rl.window_should_close():
+            if game is None:
+                if rl.is_key_pressed(rl.KeyboardKey.KEY_X):
+                    game = create_game(config, PLAYER_X, logger)
+                elif rl.is_key_pressed(rl.KeyboardKey.KEY_O):
+                    game = create_game(config, PLAYER_O, logger)
 
-            rl.begin_drawing()
-            rl.clear_background(rl.RAYWHITE)
-            rl.draw_text(
-                "Press X to start game",
-                WIDTH // 2 - 100,
-                HEIGHT // 2 - 20,
-                20,
-                rl.DARKGRAY,
-            )
-            rl.draw_text(
-                "Press O to join game", WIDTH // 2 - 100, HEIGHT // 2, 20, rl.DARKGRAY
-            )
-            rl.end_drawing()
-        else:
-            if not game.game_over():
-                game.update()
-                if rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
-                    mouse_x = rl.get_mouse_x()
-                    mouse_y = rl.get_mouse_y()
-                    col = mouse_x // CELL_SIZE
-                    row = mouse_y // CELL_SIZE
-                    if not game.move(Movement(row, col)):
-                        print("Invalid movement")
-
-            rl.begin_drawing()
-            rl.clear_background(rl.RAYWHITE)
-            draw_board(game.state.board)
-
-            if game.game_over():
-                if rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_RIGHT):
-                    game.close()
-                    game = create_game(config, None, logger)
-                else:
-                    if game.state.winner != DRAW_GAME:
-                        message = f"Player {player_str(game.state.winner)} wins!"
-                    else:
-                        message = "It's a draw!"
-                    rl.draw_text(
-                        message, WIDTH // 2 - 100, HEIGHT // 2 - 20, 20, rl.DARKGRAY
-                    )
-                    rl.draw_text(
-                        "Click right mouse button to reset",
-                        WIDTH // 2 - 100,
-                        HEIGHT // 2,
-                        20,
-                        rl.DARKGRAY,
-                    )
-            else:
-                message = f"Player: {player_str(game.player)} -- Turn: {player_str(game.state.current_player)}"
+                rl.begin_drawing()
+                rl.clear_background(rl.RAYWHITE)
                 rl.draw_text(
-                    message,
-                    (WIDTH - rl.measure_text(message, 20)) // 2,
-                    HEIGHT - 32,
+                    "Press X to start game",
+                    WIDTH // 2 - 100,
+                    HEIGHT // 2 - 20,
                     20,
                     rl.DARKGRAY,
                 )
+                rl.draw_text(
+                    "Press O to join game",
+                    WIDTH // 2 - 100,
+                    HEIGHT // 2,
+                    20,
+                    rl.DARKGRAY,
+                )
+                rl.end_drawing()
+            else:
+                if not game.game_over():
+                    game.update()
+                    if rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
+                        mouse_x = rl.get_mouse_x()
+                        mouse_y = rl.get_mouse_y()
+                        col = mouse_x // CELL_SIZE
+                        row = mouse_y // CELL_SIZE
+                        if not game.move(Movement(row, col)):
+                            print("Invalid movement")
 
-            rl.end_drawing()
-        await asyncio.sleep(0)
+                rl.begin_drawing()
+                rl.clear_background(rl.RAYWHITE)
+                draw_board(game.state.board)
 
-    rl.close_window()
+                if game.game_over():
+                    if rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_RIGHT):
+                        game.close()
+                        game = create_game(config, None, logger)
+                    else:
+                        if game.state.winner != DRAW_GAME:
+                            message = f"Player {player_str(game.state.winner)} wins!"
+                        else:
+                            message = "It's a draw!"
+                        rl.draw_text(
+                            message, WIDTH // 2 - 100, HEIGHT // 2 - 20, 20, rl.DARKGRAY
+                        )
+                        rl.draw_text(
+                            "Click right mouse button to reset",
+                            WIDTH // 2 - 100,
+                            HEIGHT // 2,
+                            20,
+                            rl.DARKGRAY,
+                        )
+                else:
+                    message = f"Player: {player_str(game.player)} -- Turn: {player_str(game.state.current_player)}"
+                    rl.draw_text(
+                        message,
+                        (WIDTH - rl.measure_text(message, 20)) // 2,
+                        HEIGHT - 32,
+                        20,
+                        rl.DARKGRAY,
+                    )
+
+                rl.end_drawing()
+            await asyncio.sleep(0)
+
+        rl.close_window()
+    finally:
+        if game is not None:
+            game.close()
 
 
 """

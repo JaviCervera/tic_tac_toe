@@ -1,5 +1,6 @@
 {
   "local": false,
   "kafka_url": "localhost:9092",
-  "kafka_topic": "tic-tac-toe"
+  "kafka_topic": "tic-tac-toe",
+  "sockets_host": "localhost:1234"
 }

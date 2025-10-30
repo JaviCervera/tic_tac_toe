@@ -1,4 +1,4 @@
-DRAW_GAME = -1
+DRAW_GAME = 3
 EMPTY = None
 GRID_SIZE = 3
 PLAYER_X = 1
