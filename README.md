@@ -36,6 +36,5 @@ Then, start two instances of *main.py*, selecting X in one and O in the other to
 
 ## TODO
 
-* Logging.
-* Server deployment on Render or Railway.
+* Kafka deployment on https://www.confluent.io/confluent-cloud/.
 * Check web render offset (input is at top left, rendering is at bottom left).

@@ -1,7 +1,7 @@
 import logging
 
-from game.client import Client
-from game.tic_tac_toe_state import TicTacToeState
+from ..client import Client
+from ..tic_tac_toe_state import TicTacToeState
 
 
 class LoggedClient(Client):

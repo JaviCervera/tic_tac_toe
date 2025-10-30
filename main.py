@@ -9,9 +9,8 @@ import logging
 
 import pyray as rl
 
-from client.config import Config, load_config
-from client.logged_client import LoggedClient
-from client.logged_server import LoggedServer
+from game.config import Config, load_config
+from game.logged.logged_client import LoggedClient
 from game.board import Board
 from game.constants import DRAW_GAME, GRID_SIZE, PLAYER_O, PLAYER_X
 from game.movement import Movement
@@ -55,16 +54,15 @@ def draw_board(board: Board):
 
 
 def create_local_game(logger: logging.Logger) -> TicTacToeGame:
-    from client.local_game import LocalGame
+    from game.local.local_game import LocalGame
 
     return LocalGame(logger)
 
 
-def create_server_game(
+def create_online_game(
     config: Config, player: Player, logger: logging.Logger
 ) -> TicTacToeGame:
-    from client.kafka_client import KafkaClient
-    from client.rest_server import RestServer
+    from game.kafka.kafka_client import KafkaClient
 
     return TicTacToeGame(
         player,
@@ -72,7 +70,6 @@ def create_server_game(
             KafkaClient(config.kafka_url, config.kafka_topic, player == PLAYER_X),
             logger,
         ),
-        LoggedServer(RestServer(config.server_url), logger),
     )
 
 
@@ -84,7 +81,7 @@ def create_game(
     elif player is None:
         return None
     else:
-        return create_server_game(config, player, logger)
+        return create_online_game(config, player, logger)
 
 
 async def main() -> None:
@@ -166,4 +163,8 @@ async def main() -> None:
     rl.close_window()
 
 
+"""
+pygbag is used to run the app on a browser,
+and it requires an async main func
+"""
 asyncio.run(main())

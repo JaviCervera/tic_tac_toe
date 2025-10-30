@@ -6,8 +6,8 @@ from kafka import KafkaConsumer, KafkaProducer
 from kafka.admin import KafkaAdminClient, NewTopic
 from kafka.errors import UnknownTopicOrPartitionError
 
-from game.client import Client
-from game.tic_tac_toe_state import TicTacToeState
+from ..client import Client
+from ..tic_tac_toe_state import TicTacToeState
 
 
 class KafkaClient(Client):
