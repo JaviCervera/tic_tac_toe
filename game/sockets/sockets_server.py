@@ -3,7 +3,7 @@ import queue
 import socket
 import threading
 
-from .buffer_size import BUFFER_SIZE
+from .packet_stream import PacketStream
 
 
 class SocketsServer:
@@ -34,15 +34,15 @@ class SocketsServer:
         while not self._stop_event.is_set():
             try:
                 client_socket, addr = self._server.accept()
-                client_socket.setblocking(False)
                 client_thread = threading.Thread(
-                    target=self._handle_client_messages, args=(client_socket,)
+                    target=self._handle_client_packets,
+                    args=(client_socket, PacketStream(client_socket)),
                 )
                 client_thread.start()
                 self._client_threads.append(client_thread)
                 self._client_sockets.append(client_socket)
 
-                # Send already dispatched messages to new client
+                # Send already dispatched packets to new client
                 with self._dispatched_queue.mutex:
                     msg_list = list(self._dispatched_queue.queue)
                 for msg in msg_list:
@@ -50,16 +50,17 @@ class SocketsServer:
             except BlockingIOError:
                 pass
 
-    def _handle_client_messages(self, socket) -> None:
+    def _handle_client_packets(
+        self, socket: socket.socket, stream: PacketStream
+    ) -> None:
         while not self._stop_event.is_set():
             try:
-                message = socket.recv(BUFFER_SIZE)
-                # Send message to all connected clients
-                for client_socket in self._client_sockets:
-                    client_socket.send(message)
-                self._dispatched_queue.put(message)
-            except BlockingIOError:
-                continue
+                packet = stream.read_packet()
+                if packet is not None:
+                    # Send packet to all connected clients
+                    for client_socket in self._client_sockets:
+                        client_socket.send(packet)
+                    self._dispatched_queue.put(packet)
             except ConnectionResetError:
                 break
         self._client_sockets.remove(socket)

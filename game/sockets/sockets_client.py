@@ -4,23 +4,23 @@ from ..board import Board
 from ..client import Client
 from ..constants import GRID_SIZE
 from ..tic_tac_toe_state import TicTacToeState
-from .buffer_size import BUFFER_SIZE
+from .packet_stream import PacketStream
 
 
 class SocketsClient(Client):
     def __init__(self, host: str, port: int):
         self._client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._client.connect((host, port))
-        self._client.setblocking(False)
+        self._stream = PacketStream(self._client)
 
     def send_state(self, state: TicTacToeState) -> None:
         self._client.send(self._state_to_bytes(state))
 
     def receive_state(self) -> TicTacToeState | None:
-        try:
-            return self._bytes_to_state(self._client.recv(BUFFER_SIZE))
-        except BlockingIOError:
+        packet = self._stream.read_packet()
+        if packet is None:
             return None
+        return self._bytes_to_state(packet)
 
     def close(self) -> None:
         self._client.close()
