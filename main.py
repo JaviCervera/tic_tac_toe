@@ -9,9 +9,7 @@ import logging
 
 import pyray as rl
 
-from game.client import Client
 from game.config import Config, load_config
-from game.logged.logged_client import LoggedClient
 from game.board import Board
 from game.constants import DRAW_GAME, GRID_SIZE, PLAYER_O, PLAYER_X
 from game.movement import Movement
