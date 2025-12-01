@@ -8,5 +8,9 @@ const (
 )
 
 func PlayerStr(player Player) string {
-	return (player == PlayerX) ? "X" : "0"
+	if player == PlayerX {
+		return "X"
+	} else {
+		return "0"
+	}
 }

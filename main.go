@@ -1,6 +1,10 @@
 package main
 
+import (
+	"tic_tac_toe/game"
+)
+
 func main() {
-	OpenWindow()
-	CloseWindow()
+	game.OpenWindow()
+	game.CloseWindow()
 }
