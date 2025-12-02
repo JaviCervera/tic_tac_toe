@@ -60,8 +60,8 @@ func DrawGameState(state core.GameState, localPlayer core.Player) {
 		message := ""
 		if state.Winner == core.DrawGame {
 			message = "It's a draw!"
-		} else if playerPtr, ok := state.Winner.(*core.Player); ok {
-			message = fmt.Sprintf("Player %s wins!", core.PlayerStr(*playerPtr))
+		} else {
+			message = fmt.Sprintf("Player %s wins!", core.PlayerStr(state.Winner.(core.Player)))
 		}
 		rl.DrawText(message, winWidth/2-100, winHeight/2-20, 20, rl.DarkGray)
 		rl.DrawText("Click right mouse button to reset", winWidth/2-100, winHeight/2, 20, rl.DarkGray)
@@ -75,16 +75,14 @@ func DrawGameState(state core.GameState, localPlayer core.Player) {
 func drawBoard(board core.Board) {
 	for rowIdx, row := range board {
 		for colIdx, cell := range row {
-			if cell != nil {
-				x := int32(colIdx * cellSize)
-				y := int32(rowIdx * cellSize)
-				switch *cell {
-				case core.PlayerX:
-					rl.DrawLine(x+20, y+20, x+cellSize-20, y+cellSize-20, rl.Red)
-					rl.DrawLine(x+cellSize-20, y+20, x+20, y+cellSize-20, rl.Red)
-				case core.Player0:
-					rl.DrawCircle(x+cellSize/2, y+cellSize/2, cellSize/2-20, rl.Blue)
-				}
+			x := int32(colIdx * cellSize)
+			y := int32(rowIdx * cellSize)
+			switch cell {
+			case core.PlayerX:
+				rl.DrawLine(x+20, y+20, x+cellSize-20, y+cellSize-20, rl.Red)
+				rl.DrawLine(x+cellSize-20, y+20, x+20, y+cellSize-20, rl.Red)
+			case core.Player0:
+				rl.DrawCircle(x+cellSize/2, y+cellSize/2, cellSize/2-20, rl.Blue)
 			}
 		}
 	}

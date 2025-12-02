@@ -21,6 +21,8 @@ func (game *LocalGame) CurrentPlayer() core.Player {
 func NewLocalGame() *LocalGame {
 	return &LocalGame{
 		BaseGame: core.BaseGame{
+			State:  core.NewGameState(),
+			Player: core.PlayerX,
 			Client: &LocalClient{},
 		},
 	}

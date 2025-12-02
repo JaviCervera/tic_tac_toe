@@ -35,10 +35,10 @@ func (game *BaseGame) GameOver() bool {
 }
 
 func performMovement(state GameState, movement Movement) *GameState {
-	if state.Board[movement.Row][movement.Col] != nil || state.Winner != nil {
+	if state.Board[movement.Row][movement.Col] != NoPlayer || state.Winner != nil {
 		return nil
 	}
-	state.Board[movement.Row][movement.Col] = &state.NextPlayer
+	state.Board[movement.Row][movement.Col] = state.NextPlayer
 	return &GameState{
 		state.Board,
 		nextPlayer(state.NextPlayer),
@@ -77,7 +77,7 @@ func checkWinner(board Board) Winner {
 func hasEmptyCells(board Board) bool {
 	for _, row := range board {
 		for _, cell := range row {
-			if cell == nil {
+			if cell == NoPlayer {
 				return true
 			}
 		}
@@ -85,13 +85,6 @@ func hasEmptyCells(board Board) bool {
 	return false
 }
 
-func hasSamePlayer(cell1 *Player, cell2 *Player, cell3 *Player) bool {
-	if !areCellsSet(cell1, cell2, cell3) {
-		return false
-	}
-	return *cell1 == *cell2 && *cell2 == *cell3
-}
-
-func areCellsSet(cell1 *Player, cell2 *Player, cell3 *Player) bool {
-	return cell1 != nil && cell2 != nil && cell3 != nil
+func hasSamePlayer(cell1 Player, cell2 Player, cell3 Player) bool {
+	return cell1 != NoPlayer && cell1 == cell2 && cell2 == cell3
 }

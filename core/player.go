@@ -3,7 +3,8 @@ package core
 type Player int
 
 const (
-	PlayerX Player = iota
+	NoPlayer Player = iota
+	PlayerX
 	Player0
 )
 
