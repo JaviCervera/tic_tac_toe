@@ -1,4 +1,4 @@
-package game
+package window
 
 import rl "github.com/gen2brain/raylib-go/raylib"
 
@@ -13,4 +13,13 @@ func OpenWindow() {
 
 func CloseWindow() {
 	rl.CloseWindow()
+}
+
+func ShouldCloseWindow() bool {
+	return rl.WindowShouldClose()
+}
+
+func DrawWelcomeScreen() {
+	rl.BeginDrawing()
+	rl.EndDrawing()
 }

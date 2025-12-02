@@ -1,4 +1,4 @@
-package game
+package core
 
 type Movement struct {
 	row int
