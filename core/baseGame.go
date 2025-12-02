@@ -1,9 +1,9 @@
 package core
 
 type BaseGame struct {
-	State         GameState
-	CurrentPlayer Player
-	Client        Client
+	State  GameState
+	Player Player
+	Client Client
 }
 
 func (game *BaseGame) GameState() GameState {
@@ -19,7 +19,7 @@ func (game *BaseGame) Update() {
 }
 
 func (game *BaseGame) Move(movement Movement) bool {
-	if game.State.NextPlayer == game.CurrentPlayer {
+	if game.State.NextPlayer == game.Player {
 		newState := performMovement(game.State, movement)
 		if newState != nil {
 			game.State = *newState
@@ -35,10 +35,10 @@ func (game *BaseGame) GameOver() bool {
 }
 
 func performMovement(state GameState, movement Movement) *GameState {
-	if state.Board[movement.row][movement.col] != nil || state.Winner != nil {
+	if state.Board[movement.Row][movement.Col] != nil || state.Winner != nil {
 		return nil
 	}
-	state.Board[movement.row][movement.col] = &state.NextPlayer
+	state.Board[movement.Row][movement.Col] = &state.NextPlayer
 	return &GameState{
 		state.Board,
 		nextPlayer(state.NextPlayer),
@@ -58,14 +58,18 @@ func checkWinner(board Board) Winner {
 		return DrawGame
 	}
 	for i := range board {
-		if (board[i][0] == board[i][1] && board[i][1] == board[i][2] && board[i][0] != nil) ||
-			(board[0][i] == board[1][i] && board[1][i] == board[2][i] && board[0][i] != nil) {
-			return &board[i][0]
+		if areCellsSet(board[i][0], board[i][1], board[i][2]) && areCellsEqual(board[i][0], board[i][1], board[i][2]) {
+			return board[i][0]
+		}
+		if areCellsSet(board[0][i], board[1][i], board[2][i]) && areCellsEqual(board[0][i], board[1][i], board[2][i]) {
+			return board[0][i]
 		}
 	}
-	if (board[0][0] == board[1][1] && board[1][1] == board[2][2] && board[0][0] != nil) ||
-		(board[0][2] == board[1][1] && board[1][1] == board[2][0] && board[0][2] != nil) {
-		return &board[1][1]
+	if areCellsSet(board[0][0], board[1][1], board[2][2]) && areCellsEqual(board[0][0], board[1][1], board[2][2]) {
+		return board[0][0]
+	}
+	if areCellsSet(board[0][2], board[1][1], board[2][0]) && areCellsEqual(board[0][2], board[1][1], board[2][0]) {
+		return board[0][2]
 	}
 	return nil
 }
@@ -79,4 +83,12 @@ func hasEmptyCells(board Board) bool {
 		}
 	}
 	return false
+}
+
+func areCellsSet(cell1 *Player, cell2 *Player, cell3 *Player) bool {
+	return cell1 != nil && cell2 != nil && cell3 != nil
+}
+
+func areCellsEqual(cell1 *Player, cell2 *Player, cell3 *Player) bool {
+	return *cell1 == *cell2 && *cell2 == *cell3
 }

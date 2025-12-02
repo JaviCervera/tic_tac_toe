@@ -8,10 +8,20 @@ type LocalGame struct {
 
 func (game *LocalGame) Move(movement core.Movement) bool {
 	result := game.BaseGame.Move(movement)
-	game.CurrentPlayer = game.State.NextPlayer
+	game.Player = game.State.NextPlayer
 	return result
 }
 
-func NewLocalGame() LocalGame {
-	return LocalGame{}
+func (game *LocalGame) Cleanup() {}
+
+func (game *LocalGame) CurrentPlayer() core.Player {
+	return game.Player
+}
+
+func NewLocalGame() *LocalGame {
+	return &LocalGame{
+		BaseGame: core.BaseGame{
+			Client: &LocalClient{},
+		},
+	}
 }

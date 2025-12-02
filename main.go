@@ -15,7 +15,7 @@ func main() {
 			game.Update()
 			movement := window.SelectedMovement()
 			if movement != nil {
-				if !game.Move(movement) {
+				if !game.Move(*movement) {
 					fmt.Println("Invalid movement")
 				}
 			}
@@ -31,5 +31,5 @@ func main() {
 }
 
 func createGame() core.Game {
-	return &local.LocalGame{}
+	return local.NewLocalGame()
 }
