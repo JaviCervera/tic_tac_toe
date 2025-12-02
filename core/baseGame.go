@@ -48,7 +48,7 @@ func performMovement(state GameState, movement Movement) *GameState {
 
 func nextPlayer(currentPlayer Player) Player {
 	if currentPlayer == PlayerX {
-		return Player0
+		return PlayerO
 	}
 	return PlayerX
 }

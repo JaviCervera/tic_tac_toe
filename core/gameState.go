@@ -1,5 +1,7 @@
 package core
 
+import "fmt"
+
 type GameState struct {
 	Board      Board
 	NextPlayer Player
@@ -8,18 +10,12 @@ type GameState struct {
 
 func NewGameState() GameState {
 	return GameState{
-		Board:      newBoard(),
+		Board:      NewBoard(),
 		NextPlayer: PlayerX,
 		Winner:     NoPlayer,
 	}
 }
 
-func newBoard() Board {
-	var board Board
-	for i := range board {
-		for j := range board[i] {
-			board[i][j] = NoPlayer
-		}
-	}
-	return board
+func (state GameState) String() string {
+	return fmt.Sprintf("GameState{Board:%s,NextPlayer:%s,Winner:%s}", state.Board, state.NextPlayer, state.Winner)
 }

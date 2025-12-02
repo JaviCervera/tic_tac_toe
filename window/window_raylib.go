@@ -30,7 +30,7 @@ func SelectedPlayer() *core.Player {
 	if rl.IsKeyPressed(rl.KeyX) {
 		player = core.PlayerX
 	} else if rl.IsKeyPressed(rl.KeyO) {
-		player = core.Player0
+		player = core.PlayerO
 	} else {
 		return nil
 	}
@@ -52,6 +52,14 @@ func SelectedRestart() bool {
 	return rl.IsMouseButtonPressed(rl.MouseButtonRight)
 }
 
+func DrawWelcomeScreen() {
+	rl.BeginDrawing()
+	rl.ClearBackground(rl.RayWhite)
+	rl.DrawText("Press X to start game", winWidth/2-100, winHeight/2-20, 20, rl.DarkGray)
+	rl.DrawText("Press O to join game", winWidth/2-100, winHeight/2, 20, rl.DarkGray)
+	rl.EndDrawing()
+}
+
 func DrawGameState(state core.GameState, localPlayer core.Player) {
 	rl.BeginDrawing()
 	rl.ClearBackground(rl.RayWhite)
@@ -61,12 +69,12 @@ func DrawGameState(state core.GameState, localPlayer core.Player) {
 		if state.Winner == core.DrawGame {
 			message = "It's a draw!"
 		} else {
-			message = fmt.Sprintf("Player %s wins!", core.PlayerStr(state.Winner))
+			message = fmt.Sprintf("Player %s wins!", state.Winner)
 		}
 		rl.DrawText(message, winWidth/2-100, winHeight/2-20, 20, rl.DarkGray)
 		rl.DrawText("Click right mouse button to reset", winWidth/2-100, winHeight/2, 20, rl.DarkGray)
 	} else {
-		message := fmt.Sprintf("Player: %s -- Turn: %s", core.PlayerStr(localPlayer), core.PlayerStr(state.NextPlayer))
+		message := fmt.Sprintf("Player: %s -- Turn: %s", localPlayer, state.NextPlayer)
 		rl.DrawText(message, (winWidth-rl.MeasureText(message, 20))/2, winHeight-32, 20, rl.DarkGray)
 	}
 	rl.EndDrawing()
@@ -81,7 +89,7 @@ func drawBoard(board core.Board) {
 			case core.PlayerX:
 				rl.DrawLine(x+20, y+20, x+cellSize-20, y+cellSize-20, rl.Red)
 				rl.DrawLine(x+cellSize-20, y+20, x+20, y+cellSize-20, rl.Red)
-			case core.Player0:
+			case core.PlayerO:
 				rl.DrawCircle(x+cellSize/2, y+cellSize/2, cellSize/2-20, rl.Blue)
 			}
 		}

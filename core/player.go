@@ -5,13 +5,15 @@ type Player int
 const (
 	NoPlayer Player = iota
 	PlayerX
-	Player0
+	PlayerO
 )
 
-func PlayerStr(player Player) string {
-	if player == PlayerX {
+func (player Player) String() string {
+	switch player {
+	case PlayerX:
 		return "X"
-	} else {
-		return "0"
+	case PlayerO:
+		return "O"
 	}
+	return "-"
 }
