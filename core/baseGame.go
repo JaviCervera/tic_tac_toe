@@ -58,17 +58,17 @@ func checkWinner(board Board) Winner {
 		return DrawGame
 	}
 	for i := range board {
-		if areCellsSet(board[i][0], board[i][1], board[i][2]) && areCellsEqual(board[i][0], board[i][1], board[i][2]) {
+		if hasSamePlayer(board[i][0], board[i][1], board[i][2]) {
 			return board[i][0]
 		}
-		if areCellsSet(board[0][i], board[1][i], board[2][i]) && areCellsEqual(board[0][i], board[1][i], board[2][i]) {
+		if hasSamePlayer(board[0][i], board[1][i], board[2][i]) {
 			return board[0][i]
 		}
 	}
-	if areCellsSet(board[0][0], board[1][1], board[2][2]) && areCellsEqual(board[0][0], board[1][1], board[2][2]) {
+	if hasSamePlayer(board[0][0], board[1][1], board[2][2]) {
 		return board[0][0]
 	}
-	if areCellsSet(board[0][2], board[1][1], board[2][0]) && areCellsEqual(board[0][2], board[1][1], board[2][0]) {
+	if hasSamePlayer(board[0][2], board[1][1], board[2][0]) {
 		return board[0][2]
 	}
 	return nil
@@ -85,10 +85,13 @@ func hasEmptyCells(board Board) bool {
 	return false
 }
 
-func areCellsSet(cell1 *Player, cell2 *Player, cell3 *Player) bool {
-	return cell1 != nil && cell2 != nil && cell3 != nil
+func hasSamePlayer(cell1 *Player, cell2 *Player, cell3 *Player) bool {
+	if !areCellsSet(cell1, cell2, cell3) {
+		return false
+	}
+	return *cell1 == *cell2 && *cell2 == *cell3
 }
 
-func areCellsEqual(cell1 *Player, cell2 *Player, cell3 *Player) bool {
-	return *cell1 == *cell2 && *cell2 == *cell3
+func areCellsSet(cell1 *Player, cell2 *Player, cell3 *Player) bool {
+	return cell1 != nil && cell2 != nil && cell3 != nil
 }
