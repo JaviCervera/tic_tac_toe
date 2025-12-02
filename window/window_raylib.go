@@ -56,12 +56,12 @@ func DrawGameState(state core.GameState, localPlayer core.Player) {
 	rl.BeginDrawing()
 	rl.ClearBackground(rl.RayWhite)
 	drawBoard(state.Board)
-	if state.Winner != nil {
+	if state.Winner != core.NoPlayer {
 		message := ""
 		if state.Winner == core.DrawGame {
 			message = "It's a draw!"
 		} else {
-			message = fmt.Sprintf("Player %s wins!", core.PlayerStr(state.Winner.(core.Player)))
+			message = fmt.Sprintf("Player %s wins!", core.PlayerStr(state.Winner))
 		}
 		rl.DrawText(message, winWidth/2-100, winHeight/2-20, 20, rl.DarkGray)
 		rl.DrawText("Click right mouse button to reset", winWidth/2-100, winHeight/2, 20, rl.DarkGray)

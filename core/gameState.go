@@ -3,14 +3,14 @@ package core
 type GameState struct {
 	Board      Board
 	NextPlayer Player
-	Winner     Winner
+	Winner     Player
 }
 
 func NewGameState() GameState {
 	return GameState{
 		Board:      newBoard(),
 		NextPlayer: PlayerX,
-		Winner:     nil,
+		Winner:     NoPlayer,
 	}
 }
 

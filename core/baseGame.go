@@ -31,11 +31,11 @@ func (game *BaseGame) Move(movement Movement) bool {
 }
 
 func (game *BaseGame) GameOver() bool {
-	return game.State.Winner != nil
+	return game.State.Winner != NoPlayer
 }
 
 func performMovement(state GameState, movement Movement) *GameState {
-	if state.Board[movement.Row][movement.Col] != NoPlayer || state.Winner != nil {
+	if state.Board[movement.Row][movement.Col] != NoPlayer || state.Winner != NoPlayer {
 		return nil
 	}
 	state.Board[movement.Row][movement.Col] = state.NextPlayer
@@ -53,7 +53,7 @@ func nextPlayer(currentPlayer Player) Player {
 	return PlayerX
 }
 
-func checkWinner(board Board) Winner {
+func checkWinner(board Board) Player {
 	if !hasEmptyCells(board) {
 		return DrawGame
 	}
@@ -71,7 +71,7 @@ func checkWinner(board Board) Winner {
 	if hasSamePlayer(board[0][2], board[1][1], board[2][0]) {
 		return board[0][2]
 	}
-	return nil
+	return NoPlayer
 }
 
 func hasEmptyCells(board Board) bool {
