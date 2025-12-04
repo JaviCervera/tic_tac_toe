@@ -79,7 +79,7 @@ func (ss *SocketServer) handleClient(client net.Conn) {
 				return
 			}
 			ss.addMessage(buf)
-			ss.broadcast(buf)
+			ss.broadcast(buf, client)
 		}
 	}
 }
@@ -90,10 +90,13 @@ func (ss *SocketServer) addMessage(message []byte) {
 	ss.messages = append(ss.messages, message)
 }
 
-func (ss *SocketServer) broadcast(message []byte) {
+func (ss *SocketServer) broadcast(message []byte, sender net.Conn) {
 	ss.clientsMutex.Lock()
 	defer ss.clientsMutex.Unlock()
 	for _, client := range ss.clients {
+		if client == sender {
+			continue
+		}
 		_, err := client.Write(message)
 		if err != nil {
 			ss.deleteClient(client)
