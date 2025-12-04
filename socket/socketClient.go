@@ -15,7 +15,7 @@ type SocketClient struct {
 }
 
 func NewSocketClient(host string, port int) (*SocketClient, error) {
-	conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", host, port))
+	conn, err := net.Dial("tcp", fmt.Sprintf("[%s]:%d", host, port))
 	if err != nil {
 		return nil, err
 	}
