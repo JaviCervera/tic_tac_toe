@@ -43,7 +43,6 @@ func (ss *SocketServer) handleConnections() {
 		default:
 			client, err := ss.listener.Accept()
 			if err != nil {
-				fmt.Println("Error accepting connection:", err)
 				continue
 			}
 			ss.sendExistingMessages(client)
